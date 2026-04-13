@@ -1,0 +1,6 @@
+@MercadoMAX.Comerciante.API_HostAddress = http://localhost:5165
+
+GET {{MercadoMAX.Comerciante.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

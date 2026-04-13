@@ -1,0 +1,38 @@
+## .NET / Visual Studio
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.swp
+
+## Configuración local con secretos
+appsettings.Development.json
+appsettings.Production.json
+
+## Archivos de publicación
+publish/
+**/publish/
+*.pubxml
+*.pubxml.user
+
+## NuGet
+*.nupkg
+packages/
+project.lock.json
+
+## Logs
+*.log
+logs/
+
+## Cobertura de pruebas
+*.coverage
+TestResults/
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## OS
+.DS_Store
+Thumbs.db
