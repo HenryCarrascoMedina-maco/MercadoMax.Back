@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using MercadoMAX.Transporte.API.DTOs;
 using MercadoMAX.Shared.Data;
 using MercadoMAX.Shared.DTOs;
@@ -112,7 +112,7 @@ public class TruckRepository : ITruckRepository
     {
         using var conn = _db.CreateConnection();
         return await conn.QueryFirstAsync<SpResult>("transport.SP_CREATE_TRUCK",
-            new { r.LicensePlate, r.CarrierId, r.Capacity, r.Brand, r.Model },
+            new { r.LicensePlate, r.CarrierId, r.CapacityKg, r.Brand, r.Model },
             commandType: CommandType.StoredProcedure);
     }
 
@@ -144,7 +144,7 @@ public class TruckRepository : ITruckRepository
     {
         using var conn = _db.CreateConnection();
         return await conn.QueryFirstAsync<SpResult>("transport.SP_UPDATE_TRUCK",
-            new { r.Id, r.LicensePlate, r.CarrierId, r.Capacity, r.Brand, r.Model, r.Status },
+            new { r.Id, r.LicensePlate, r.CarrierId, r.CapacityKg, r.Brand, r.Model, r.Status },
             commandType: CommandType.StoredProcedure);
     }
 

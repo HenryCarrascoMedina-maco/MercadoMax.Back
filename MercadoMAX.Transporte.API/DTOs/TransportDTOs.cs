@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace MercadoMAX.Transporte.API.DTOs;
 
@@ -45,7 +45,8 @@ public class CreateTruckRequest
 {
     [Required, MaxLength(15)] public string LicensePlate { get; set; } = string.Empty;
     [Required] public int CarrierId { get; set; }
-    [MaxLength(50)] public string? Capacity { get; set; }
+    /// <summary>Capacidad de carga en kg. Sustituye a Capacity, que era texto libre.</summary>
+    public decimal? CapacityKg { get; set; }
     [MaxLength(50)] public string? Brand { get; set; }
     [MaxLength(50)] public string? Model { get; set; }
 }
@@ -55,7 +56,8 @@ public class UpdateTruckRequest
     [Required] public int Id { get; set; }
     [Required, MaxLength(15)] public string LicensePlate { get; set; } = string.Empty;
     [Required] public int CarrierId { get; set; }
-    [MaxLength(50)] public string? Capacity { get; set; }
+    /// <summary>Capacidad de carga en kg. Sustituye a Capacity, que era texto libre.</summary>
+    public decimal? CapacityKg { get; set; }
     [MaxLength(50)] public string? Brand { get; set; }
     [MaxLength(50)] public string? Model { get; set; }
     public bool Status { get; set; }
@@ -67,7 +69,10 @@ public class TruckResponse
     public string LicensePlate { get; set; } = string.Empty;
     public int CarrierId { get; set; }
     public string CarrierName { get; set; } = string.Empty;
+    /// <summary>Texto heredado. Se conserva hasta retirar la columna antigua.</summary>
     public string? Capacity { get; set; }
+    /// <summary>Capacidad de carga en kg, la que usan los calculos.</summary>
+    public decimal? CapacityKg { get; set; }
     public string? Brand { get; set; }
     public string? Model { get; set; }
     public bool Status { get; set; }
