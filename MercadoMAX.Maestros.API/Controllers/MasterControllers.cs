@@ -1,63 +1,47 @@
 using MercadoMAX.Maestros.API.DTOs;
 using MercadoMAX.Maestros.API.Services;
+using MercadoMAX.Shared.CrossCutting.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MercadoMAX.Maestros.API.Controllers;
 
-[ApiController]
+// ── ProductCategory (migrado a BaseApiController — piloto Fase 1) ──
+// Errores (404/409/400) los traduce el GlobalExceptionMiddleware desde las excepciones del service.
 [Route("api/[controller]")]
 [Authorize]
-public class ProductCategoryController : ControllerBase
+public class ProductCategoryController : BaseApiController
 {
     private readonly IProductCategoryService _service;
     public ProductCategoryController(IProductCategoryService service) => _service = service;
 
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] bool? status, [FromQuery] string? search)
-    {
-        var result = await _service.ListAsync(status, search);
-        return Ok(result);
-    }
+        => OkResponse(await _service.ListAsync(status, search));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
-    {
-        var result = await _service.GetByIdAsync(id);
-        return result.Success ? Ok(result) : NotFound(result);
-    }
+        => OkResponse(await _service.GetByIdAsync(id));
 
     [HttpPost]
     [Authorize(Policy = "Masters:Create")]
     public async Task<IActionResult> Create([FromBody] CreateProductCategoryRequest request)
-    {
-        var result = await _service.CreateAsync(request);
-        return result.Success ? CreatedAtAction(nameof(GetById), new { id = result.Data }, result) : BadRequest(result);
-    }
+        => CreatedResponse(await _service.CreateAsync(request));
 
-    [HttpPut]
+    [HttpPut("{id}")]
     [Authorize(Policy = "Masters:Update")]
-    public async Task<IActionResult> Update([FromBody] UpdateProductCategoryRequest request)
-    {
-        var result = await _service.UpdateAsync(request);
-        return result.Success ? Ok(result) : BadRequest(result);
-    }
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateProductCategoryRequest request)
+        => OkResponse(await _service.UpdateAsync(id, request));
 
     [HttpDelete("{id}")]
     [Authorize(Policy = "Masters:Delete")]
     public async Task<IActionResult> Delete(int id)
-    {
-        var result = await _service.DeleteAsync(id);
-        return result.Success ? Ok(result) : BadRequest(result);
-    }
+        => OkResponse(await _service.DeleteAsync(id));
 
     [HttpPatch("{id}/toggle-status")]
     [Authorize(Policy = "Masters:Delete")]
     public async Task<IActionResult> ToggleStatus(int id)
-    {
-        var result = await _service.ToggleStatusAsync(id);
-        return result.Success ? Ok(result) : BadRequest(result);
-    }
+        => OkResponse(await _service.ToggleStatusAsync(id));
 }
 
 [ApiController]

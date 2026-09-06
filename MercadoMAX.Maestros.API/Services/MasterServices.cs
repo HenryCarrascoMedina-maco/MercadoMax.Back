@@ -1,6 +1,7 @@
 using MercadoMAX.Maestros.API.DTOs;
 using MercadoMAX.Maestros.API.Repositories;
 using MercadoMAX.Shared.DTOs;
+using MercadoMAX.Shared.CrossCutting.Exceptions;
 
 namespace MercadoMAX.Maestros.API.Services;
 
@@ -10,7 +11,7 @@ public interface IProductCategoryService
     Task<ApiResponse<int>> CreateAsync(CreateProductCategoryRequest request);
     Task<ApiResponse<ProductCategoryResponse>> GetByIdAsync(int id);
     Task<ApiResponse<List<ProductCategoryResponse>>> ListAsync(bool? status, string? search);
-    Task<ApiResponse<string>> UpdateAsync(UpdateProductCategoryRequest request);
+    Task<ApiResponse<string>> UpdateAsync(int id, UpdateProductCategoryRequest request);
     Task<ApiResponse<string>> DeleteAsync(int id);
     Task<ApiResponse<string>> ToggleStatusAsync(int id);
 }
@@ -93,38 +94,58 @@ public class ProductCategoryService : IProductCategoryService
     private readonly IProductCategoryRepository _repo;
     public ProductCategoryService(IProductCategoryRepository repo) => _repo = repo;
 
+    // Mensajes de los SP que representan un conflicto de duplicado (→ HTTP 409).
+    // Puente pragmático (no se modifican los SPs); revisar si cambian los textos del SP.
+    private static readonly string[] DuplicateMessages =
+    {
+        "Category already exists",
+        "Category name already in use"
+    };
+
     public async Task<ApiResponse<int>> CreateAsync(CreateProductCategoryRequest request)
     {
         var r = await _repo.CreateAsync(request);
-        return r.Success == 1 ? ApiResponse<int>.Ok(r.Id, r.Message) : ApiResponse<int>.Fail(r.Message);
+        if (r.Success != 1) throw MapError(r.Message);
+        return ApiResponse<int>.FromSpResult(r, r.Id);
     }
 
     public async Task<ApiResponse<ProductCategoryResponse>> GetByIdAsync(int id)
     {
-        var item = await _repo.GetByIdAsync(id);
-        return item != null ? ApiResponse<ProductCategoryResponse>.Ok(item) : ApiResponse<ProductCategoryResponse>.Fail("Not found");
+        var item = await _repo.GetByIdAsync(id)
+            ?? throw new NotFoundException("ProductCategory", id);
+        return ApiResponse<ProductCategoryResponse>.Ok(item);
     }
 
     public async Task<ApiResponse<List<ProductCategoryResponse>>> ListAsync(bool? status, string? search)
         => ApiResponse<List<ProductCategoryResponse>>.Ok(await _repo.ListAsync(status, search));
 
-    public async Task<ApiResponse<string>> UpdateAsync(UpdateProductCategoryRequest request)
+    public async Task<ApiResponse<string>> UpdateAsync(int id, UpdateProductCategoryRequest request)
     {
+        request.Id = id; // la ruta /{id} manda sobre el body
         var r = await _repo.UpdateAsync(request);
-        return r.Success == 1 ? ApiResponse<string>.Ok(r.Message) : ApiResponse<string>.Fail(r.Message);
+        if (r.Success != 1) throw MapError(r.Message);
+        return ApiResponse<string>.FromSpResult(r, r.Message);
     }
 
     public async Task<ApiResponse<string>> DeleteAsync(int id)
     {
         var r = await _repo.DeleteAsync(id);
-        return r.Success == 1 ? ApiResponse<string>.Ok(r.Message) : ApiResponse<string>.Fail(r.Message);
+        if (r.Success != 1) throw MapError(r.Message);
+        return ApiResponse<string>.FromSpResult(r, r.Message);
     }
 
     public async Task<ApiResponse<string>> ToggleStatusAsync(int id)
     {
         var r = await _repo.ToggleStatusAsync(id);
-        return r.Success == 1 ? ApiResponse<string>.Ok(r.Message) : ApiResponse<string>.Fail(r.Message);
+        if (r.Success != 1) throw MapError(r.Message);
+        return ApiResponse<string>.FromSpResult(r, r.Message);
     }
+
+    // Duplicado → 409; cualquier otra regla de negocio del SP → 400.
+    private static AppException MapError(string message)
+        => DuplicateMessages.Contains(message, StringComparer.OrdinalIgnoreCase)
+            ? new ConflictException(message)
+            : new BusinessException(message);
 }
 
 public class ProductService : IProductService

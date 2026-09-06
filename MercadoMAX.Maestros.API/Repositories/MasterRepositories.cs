@@ -1,59 +1,38 @@
-using Dapper;
+﻿using Dapper;
 using MercadoMAX.Maestros.API.DTOs;
 using MercadoMAX.Shared.Data;
 using MercadoMAX.Shared.DTOs;
+using MercadoMAX.Shared.CrossCutting.Data;
 using System.Data;
 
 namespace MercadoMAX.Maestros.API.Repositories;
 
-// ── ProductCategory ─────────────────────────────────────
+// ── ProductCategory (migrado a ISpExecutor — piloto Fase 1) ──
+// Mismos SPs, mismos parámetros; solo cambia el medio de ejecución (centralizado en SpExecutor).
 public class ProductCategoryRepository : IProductCategoryRepository
 {
-    private readonly DbConnectionFactory _db;
-    public ProductCategoryRepository(DbConnectionFactory db) => _db = db;
+    private readonly ISpExecutor _sp;
+    public ProductCategoryRepository(ISpExecutor sp) => _sp = sp;
 
-    public async Task<SpResult> CreateAsync(CreateProductCategoryRequest r)
-    {
-        using var conn = _db.CreateConnection();
-        return await conn.QueryFirstAsync<SpResult>("master.SP_CREATE_PRODUCT_CATEGORY",
-            new { r.Name, r.Description }, commandType: CommandType.StoredProcedure);
-    }
+    public Task<SpResult> CreateAsync(CreateProductCategoryRequest r)
+        => _sp.ExecSpResultAsync("master.SP_CREATE_PRODUCT_CATEGORY", new { r.Name, r.Description });
 
-    public async Task<ProductCategoryResponse?> GetByIdAsync(int id)
-    {
-        using var conn = _db.CreateConnection();
-        return await conn.QueryFirstOrDefaultAsync<ProductCategoryResponse>("master.SP_READ_PRODUCT_CATEGORY",
-            new { Id = id }, commandType: CommandType.StoredProcedure);
-    }
+    public Task<ProductCategoryResponse?> GetByIdAsync(int id)
+        => _sp.QuerySingleSpAsync<ProductCategoryResponse>("master.SP_READ_PRODUCT_CATEGORY", new { Id = id });
 
-    public async Task<List<ProductCategoryResponse>> ListAsync(bool? status, string? search)
-    {
-        using var conn = _db.CreateConnection();
-        var result = await conn.QueryAsync<ProductCategoryResponse>("master.SP_LIST_PRODUCT_CATEGORY",
-            new { Status = status, Search = search }, commandType: CommandType.StoredProcedure);
-        return result.ToList();
-    }
+    public Task<List<ProductCategoryResponse>> ListAsync(bool? status, string? search)
+        => _sp.QueryListSpAsync<ProductCategoryResponse>("master.SP_LIST_PRODUCT_CATEGORY",
+            new { Status = status, Search = search });
 
-    public async Task<SpResult> UpdateAsync(UpdateProductCategoryRequest r)
-    {
-        using var conn = _db.CreateConnection();
-        return await conn.QueryFirstAsync<SpResult>("master.SP_UPDATE_PRODUCT_CATEGORY",
-            new { r.Id, r.Name, r.Description, r.Status }, commandType: CommandType.StoredProcedure);
-    }
+    public Task<SpResult> UpdateAsync(UpdateProductCategoryRequest r)
+        => _sp.ExecSpResultAsync("master.SP_UPDATE_PRODUCT_CATEGORY",
+            new { r.Id, r.Name, r.Description, r.Status });
 
-    public async Task<SpResult> DeleteAsync(int id)
-    {
-        using var conn = _db.CreateConnection();
-        return await conn.QueryFirstAsync<SpResult>("master.SP_DELETE_PRODUCT_CATEGORY",
-            new { Id = id }, commandType: CommandType.StoredProcedure);
-    }
+    public Task<SpResult> DeleteAsync(int id)
+        => _sp.ExecSpResultAsync("master.SP_DELETE_PRODUCT_CATEGORY", new { Id = id });
 
-    public async Task<SpResult> ToggleStatusAsync(int id)
-    {
-        using var conn = _db.CreateConnection();
-        return await conn.QueryFirstAsync<SpResult>("master.SP_TOGGLE_STATUS_PRODUCT_CATEGORY",
-            new { Id = id }, commandType: CommandType.StoredProcedure);
-    }
+    public Task<SpResult> ToggleStatusAsync(int id)
+        => _sp.ExecSpResultAsync("master.SP_TOGGLE_STATUS_PRODUCT_CATEGORY", new { Id = id });
 }
 
 // ── Product ─────────────────────────────────────────────
