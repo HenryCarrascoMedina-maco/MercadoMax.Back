@@ -1,6 +1,7 @@
 using MercadoMAX.Maestros.API.Repositories;
 using MercadoMAX.Maestros.API.Services;
 using MercadoMAX.Shared.Data;
+using MercadoMAX.Shared.CrossCutting.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -96,6 +97,11 @@ builder.Services.AddCors(options =>
               .AllowCredentials());
 });
 
+builder.Services.AddHealthChecks();
+
+// ── Cross-cutting (Fase 0: aditivo, no toca controllers/services/repos/SPs) ──
+builder.Services.AddMercadoMaxCrossCutting(builder.Configuration);
+
 var app = builder.Build();
 
 // ── Pipeline ────────────────────────────────────────────
@@ -106,8 +112,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
+app.UseMercadoMaxCrossCutting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();

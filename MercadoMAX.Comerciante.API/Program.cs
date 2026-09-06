@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using MercadoMAX.Shared.Data;
+using MercadoMAX.Shared.CrossCutting.Extensions;
 using MercadoMAX.Comerciante.API.Repositories;
 using MercadoMAX.Comerciante.API.Services;
 using MercadoMAX.Shared.Authorization;
@@ -70,6 +71,11 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
     p.WithOrigins("http://localhost:4200")
      .AllowAnyHeader().AllowAnyMethod()));
 
+builder.Services.AddHealthChecks();
+
+// ── Cross-cutting (Fase 0: aditivo, no toca controllers/services/repos/SPs) ──
+builder.Services.AddMercadoMaxCrossCutting(builder.Configuration);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -79,7 +85,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseMercadoMaxCrossCutting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHealthChecks("/health");
 app.MapControllers();
 app.Run();
