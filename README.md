@@ -8,12 +8,14 @@ Plataforma digital integral para mercados mayoristas que conecta proveedores, tr
 
 | Capa | Tecnología |
 |------|-----------|
-| Backend | .NET 8 — Web API (Microservicios) |
+| Backend | .NET 10 — Web API (Microservicios) |
 | Frontend | Angular 21 (standalone components, signals) |
 | Base de Datos | SQL Server (LocalDB) |
 | ORM | Dapper + Stored Procedures |
 | Autenticación | JWT + Refresh Tokens |
+| API Gateway | Ocelot |
 | Documentación API | Swagger / OpenAPI |
+| Contenedores | Docker Compose |
 
 ---
 
@@ -21,14 +23,17 @@ Plataforma digital integral para mercados mayoristas que conecta proveedores, tr
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                  Frontend Angular (:4200)                    │
+│         Frontend Angular (:4200) — MercadoMax.Front          │
+├─────────────────────────────────────────────────────────────┤
+│                  API Gateway Ocelot (:5000)                  │
 ├──────────┬──────────┬──────────┬──────────┬─────────────────┤
 │  Auth    │ Maestros │  Guías   │Transport │  Recepción      │
 │  API     │  API     │  API     │  API     │  API            │
 │  :5001   │  :5002   │  :5003   │  :5004   │  :5005          │
-├──────────┴──────────┴──────────┴──────────┼─────────────────┤
-│  Comerciante API :5006                    │  Shared Library │
-├───────────────────────────────────────────┴─────────────────┤
+├──────────┴─────┬────┴──────────┼──────────┴─────────────────┤
+│ Comerciante    │  Finanzas     │  Shared Library            │
+│ API :5006      │  API :5007    │  (+ Cross-Cutting)         │
+├────────────────┴───────────────┴────────────────────────────┤
 │              SQL Server — MercadoMAX_DB                     │
 │              Schemas: auth, maestros, guias,                │
 │              transporte, recepcion, comerciante, finanzas   │
@@ -42,17 +47,20 @@ Plataforma digital integral para mercados mayoristas que conecta proveedores, tr
 | # | Servicio | Puerto | Schema BD | Responsabilidad |
 |---|----------|--------|-----------|-----------------|
 | 1 | Auth.API | 5001 | `auth` | Usuarios, roles, JWT, permisos |
-| 2 | Maestros.API | 5002 | `maestros` | Productos, proveedores, puestos, pabellones |
-| 3 | Guias.API | 5003 | `guias` | Guías de envío, detalle, multi-destino |
-| 4 | Transporte.API | 5004 | `transporte` | Transportistas, camiones, tarifas |
-| 5 | Recepcion.API | 5005 | `recepcion` | Llegada, descarga, faltantes |
-| 6 | Comerciante.API | 5006 | `comerciante` | Confirmación recepción, inventario |
+| 2 | Maestros.API | 5002 | `master` | Productos, proveedores, puestos, pabellones |
+| 3 | Guias.API | 5003 | `guide` | Guías de envío, detalle, multi-destino |
+| 4 | Transporte.API | 5004 | `transport` | Transportistas, camiones, tarifas |
+| 5 | Recepcion.API | 5005 | `reception` | Llegada, descarga, faltantes |
+| 6 | Comerciante.API | 5006 | `merchant` | Confirmación recepción, inventario |
+| 7 | Finanzas.API | 5007 | `finance` | Ventas, cuentas por pagar, pagos, reportes |
+| — | Gateway | 5000 | — | Punto de entrada único (Ocelot), rate limiting, health checks |
 
 ---
 
 ## Prerrequisitos
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (opcional, para levantar todo con compose)
 - [Node.js 20+](https://nodejs.org/) y npm
 - [Angular CLI 21+](https://angular.dev/) (`npm i -g @angular/cli`)
 - SQL Server (LocalDB o instancia completa)
@@ -94,40 +102,61 @@ Server=(localdb)\MSSQLLocalDB;Database=MercadoMAX_DB;Trusted_Connection=True;
 
 ## Levantar el Proyecto
 
-### Backend (todos los microservicios)
+### Todo el entorno con Docker
 
-Desde la carpeta `Backend/`, abrir terminales independientes para cada servicio:
+```powershell
+docker compose up --build
+# Gateway → http://localhost:5000   Frontend → http://localhost:4200
+```
+
+El servicio `frontend` se construye desde el repositorio MercadoMax.Front. Si
+lo clonas en otra ruta, indícala con `FRONTEND_PATH`.
+
+### Backend (microservicio por microservicio)
+
+Desde la raíz de este repositorio, abrir terminales independientes:
 
 ```powershell
 # Auth API — http://localhost:5001
-cd Backend/MercadoMAX.Auth.API
+cd MercadoMAX.Auth.API
 dotnet run
 
 # Maestros API — http://localhost:5002
-cd Backend/MercadoMAX.Maestros.API
+cd MercadoMAX.Maestros.API
 dotnet run
 
 # Guias API — http://localhost:5003
-cd Backend/MercadoMAX.Guias.API
+cd MercadoMAX.Guias.API
 dotnet run
 
 # Transporte API — http://localhost:5004
-cd Backend/MercadoMAX.Transporte.API
+cd MercadoMAX.Transporte.API
 dotnet run
 
 # Recepcion API — http://localhost:5005
-cd Backend/MercadoMAX.Recepcion.API
+cd MercadoMAX.Recepcion.API
 dotnet run
 
 # Comerciante API — http://localhost:5006
-cd Backend/MercadoMAX.Comerciante.API
+cd MercadoMAX.Comerciante.API
+dotnet run
+
+# Finanzas API — http://localhost:5007
+cd MercadoMAX.Finanzas.API
+dotnet run
+
+# Gateway — http://localhost:5000
+cd MercadoMAX.Gateway
 dotnet run
 ```
 
 ### Frontend
 
+El cliente Angular vive en su propio repositorio:
+[MercadoMax.Front](https://github.com/HenryCarrascoMedina-maco/MercadoMax.Front).
+
 ```powershell
-cd Frontend/mercado-max
+cd ../Frontend/mercado-max   # o donde hayas clonado MercadoMax.Front
 npm install
 npm start
 # → http://localhost:4200
@@ -147,27 +176,35 @@ Cada microservicio expone su documentación Swagger en desarrollo:
 | Transporte | http://localhost:5004/swagger |
 | Recepcion | http://localhost:5005/swagger |
 | Comerciante | http://localhost:5006/swagger |
+| Finanzas | http://localhost:5007/swagger |
 
 ---
 
 ## Estructura del Proyecto
 
+El proyecto vive en dos repositorios:
+
+| Repositorio | Contenido |
+|-------------|-----------|
+| [MercadoMax.Back](https://github.com/HenryCarrascoMedina-maco/MercadoMax.Back) | Microservicios .NET, gateway, scripts SQL, compose y documentación |
+| [MercadoMax.Front](https://github.com/HenryCarrascoMedina-maco/MercadoMax.Front) | SPA Angular 21 |
+
 ```
-MercadoMAX/
-├── Backend/
-│   ├── MercadoMAX.Auth.API/          # Microservicio Auth
-│   ├── MercadoMAX.Maestros.API/      # Microservicio Maestros
-│   ├── MercadoMAX.Guias.API/         # Microservicio Guías
-│   ├── MercadoMAX.Transporte.API/    # Microservicio Transporte
-│   ├── MercadoMAX.Recepcion.API/     # Microservicio Recepción
-│   ├── MercadoMAX.Comerciante.API/   # Microservicio Comerciante
-│   ├── MercadoMAX.Shared/            # Librería compartida (DTOs, Data)
-│   └── MercadoMAX.slnx               # Solución
-├── Frontend/
-│   └── mercado-max/                   # Angular 21 SPA
-├── ScriptBD/                          # Scripts SQL (tablas, SPs, seed data)
-├── PLAN_PROYECTO.md                   # Plan detallado del proyecto
-└── README.md                          # Este archivo
+MercadoMax.Back/
+├── MercadoMAX.Auth.API/           # Microservicio Auth
+├── MercadoMAX.Maestros.API/       # Microservicio Maestros
+├── MercadoMAX.Guias.API/          # Microservicio Guías
+├── MercadoMAX.Transporte.API/     # Microservicio Transporte
+├── MercadoMAX.Recepcion.API/      # Microservicio Recepción
+├── MercadoMAX.Comerciante.API/    # Microservicio Comerciante
+├── MercadoMAX.Finanzas.API/       # Microservicio Finanzas
+├── MercadoMAX.Gateway/            # API Gateway (Ocelot)
+├── MercadoMAX.Shared/             # Librería compartida (DTOs, Data, Cross-Cutting)
+├── ScriptBD/                      # Scripts SQL (tablas, SPs, seed data)
+├── docs/                          # Plan, guías, flujo y reportes de fases
+├── docker-compose.yml             # Entorno completo (BD, APIs, gateway, front)
+├── MercadoMAX.slnx                # Solución
+└── README.md                      # Este archivo
 ```
 
 ---
