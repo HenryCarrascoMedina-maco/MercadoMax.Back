@@ -1,0 +1,158 @@
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "MercadoMAX@2026"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "MercadoMAX@2026", "-Q", "SELECT 1", "-No"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  auth-api:
+    build:
+      context: .
+      dockerfile: MercadoMAX.Auth.API/Dockerfile
+    container_name: auth-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=MercadoMAX_DB;User Id=sa;Password=MercadoMAX@2026;TrustServerCertificate=True;"
+    ports:
+      - "5001:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  maestros-api:
+    build:
+      context: .
+      dockerfile: MercadoMAX.Maestros.API/Dockerfile
+    container_name: maestros-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=MercadoMAX_DB;User Id=sa;Password=MercadoMAX@2026;TrustServerCertificate=True;"
+    ports:
+      - "5002:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  guias-api:
+    build:
+      context: .
+      dockerfile: MercadoMAX.Guias.API/Dockerfile
+    container_name: guias-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=MercadoMAX_DB;User Id=sa;Password=MercadoMAX@2026;TrustServerCertificate=True;"
+    ports:
+      - "5003:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  transporte-api:
+    build:
+      context: .
+      dockerfile: MercadoMAX.Transporte.API/Dockerfile
+    container_name: transporte-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=MercadoMAX_DB;User Id=sa;Password=MercadoMAX@2026;TrustServerCertificate=True;"
+    ports:
+      - "5004:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  recepcion-api:
+    build:
+      context: .
+      dockerfile: MercadoMAX.Recepcion.API/Dockerfile
+    container_name: recepcion-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=MercadoMAX_DB;User Id=sa;Password=MercadoMAX@2026;TrustServerCertificate=True;"
+    ports:
+      - "5005:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  comerciante-api:
+    build:
+      context: .
+      dockerfile: MercadoMAX.Comerciante.API/Dockerfile
+    container_name: comerciante-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=MercadoMAX_DB;User Id=sa;Password=MercadoMAX@2026;TrustServerCertificate=True;"
+    ports:
+      - "5006:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  finanzas-api:
+    build:
+      context: .
+      dockerfile: MercadoMAX.Finanzas.API/Dockerfile
+    container_name: finanzas-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=MercadoMAX_DB;User Id=sa;Password=MercadoMAX@2026;TrustServerCertificate=True;"
+    ports:
+      - "5007:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: .
+      dockerfile: MercadoMAX.Gateway/Dockerfile
+    container_name: gateway
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: "8080"
+    ports:
+      - "5000:8080"
+    depends_on:
+      - auth-api
+      - maestros-api
+      - guias-api
+      - transporte-api
+      - recepcion-api
+      - comerciante-api
+      - finanzas-api
+
+  frontend:
+    # El frontend vive en su propio repositorio (MercadoMax.Front). Ajusta
+    # FRONTEND_PATH si lo clonas en otra ruta relativa a este compose.
+    build:
+      context: ${FRONTEND_PATH:-../Frontend/mercado-max}
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - gateway
+
+volumes:
+  sqldata:
