@@ -6,4 +6,6 @@
   <Project Path="MercadoMAX.Recepcion.API/MercadoMAX.Recepcion.API.csproj" />
   <Project Path="MercadoMAX.Shared/MercadoMAX.Shared.csproj" />
   <Project Path="MercadoMAX.Transporte.API/MercadoMAX.Transporte.API.csproj" />
+  <Project Path="MercadoMAX.Finanzas.API/MercadoMAX.Finanzas.API.csproj" />
+  <Project Path="MercadoMAX.Gateway/MercadoMAX.Gateway.csproj" />
 </Solution>
