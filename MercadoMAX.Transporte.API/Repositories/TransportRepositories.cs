@@ -45,6 +45,7 @@ public interface ISettlementRepository
     Task<SettlementReadResponse?> GetByIdAsync(int id);
     Task<(List<SettlementListResponse> Items, int TotalRecords)> ListAsync(string? status, int? carrierId, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize);
     Task<SpResult> UpdateStatusAsync(UpdateSettlementStatusRequest r);
+    Task<SpResult> DeleteAsync(int id);
     Task<SpResult> CreateDetailAsync(CreateSettlementDetailRequest r);
     Task<SpResult> DeleteDetailAsync(int id);
 }
@@ -276,6 +277,13 @@ public class SettlementRepository : ISettlementRepository
         return await conn.QueryFirstAsync<SpResult>("transport.SP_CREATE_SETTLEMENT_DETAIL",
             new { r.SettlementId, r.GuideId, r.LogisticUnitId, r.Quantity, r.UnitPrice },
             commandType: CommandType.StoredProcedure);
+    }
+
+    public async Task<SpResult> DeleteAsync(int id)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryFirstAsync<SpResult>("transport.SP_DELETE_TRANSPORT_SETTLEMENT",
+            new { Id = id }, commandType: CommandType.StoredProcedure);
     }
 
     public async Task<SpResult> DeleteDetailAsync(int id)

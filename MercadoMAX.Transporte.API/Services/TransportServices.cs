@@ -43,6 +43,7 @@ public interface ISettlementService
     Task<ApiResponse<SettlementReadResponse>> GetByIdAsync(int id);
     Task<PagedResponse<SettlementListResponse>> ListAsync(string? status, int? carrierId, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize);
     Task<ApiResponse<string>> UpdateStatusAsync(UpdateSettlementStatusRequest r);
+    Task<ApiResponse<string>> DeleteAsync(int id);
     Task<ApiResponse<int>> CreateDetailAsync(CreateSettlementDetailRequest r);
     Task<ApiResponse<string>> DeleteDetailAsync(int id);
 }
@@ -228,6 +229,16 @@ public class SettlementService : ISettlementService
     {
         var sp = await _repo.CreateDetailAsync(r);
         return sp.Success == 1 ? ApiResponse<int>.Ok(sp.Id, sp.Message) : ApiResponse<int>.Fail(sp.Message);
+    }
+
+    /// <summary>
+    /// Borra la liquidacion y sus lineas. Solo procede si sigue pendiente: una
+    /// pagada es un registro contable y el SP la rechaza.
+    /// </summary>
+    public async Task<ApiResponse<string>> DeleteAsync(int id)
+    {
+        var sp = await _repo.DeleteAsync(id);
+        return sp.Success == 1 ? ApiResponse<string>.Ok("OK", sp.Message) : ApiResponse<string>.Fail(sp.Message);
     }
 
     public async Task<ApiResponse<string>> DeleteDetailAsync(int id)

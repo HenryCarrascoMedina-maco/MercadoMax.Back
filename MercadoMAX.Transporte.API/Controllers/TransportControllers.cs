@@ -157,6 +157,18 @@ public class SettlementController : ControllerBase
     public async Task<IActionResult> UpdateStatus([FromBody] UpdateSettlementStatusRequest r)
         => Ok(await _svc.UpdateStatusAsync(r));
 
+    /// <summary>
+    /// Borra la liquidacion y sus lineas. Solo si sigue pendiente: una pagada
+    /// es un registro contable y el SP la rechaza.
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Policy = "Transport:Delete")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await _svc.DeleteAsync(id);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
     [HttpPost("detail")]
     [Authorize(Policy = "Transport:Create")]
     public async Task<IActionResult> CreateDetail([FromBody] CreateSettlementDetailRequest r)
