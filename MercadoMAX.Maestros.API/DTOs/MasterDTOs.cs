@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace MercadoMAX.Maestros.API.DTOs;
 
@@ -193,6 +193,8 @@ public class CreateLogisticUnitRequest
     public string Name { get; set; } = string.Empty;
     [Required, MaxLength(10)]
     public string Abbreviation { get; set; } = string.Empty;
+    /// <summary>Peso estimado de un bulto, en kg. Null si aun no se conoce.</summary>
+    public decimal? WeightKg { get; set; }
 }
 
 public class UpdateLogisticUnitRequest
@@ -202,6 +204,8 @@ public class UpdateLogisticUnitRequest
     public string Name { get; set; } = string.Empty;
     [Required, MaxLength(10)]
     public string Abbreviation { get; set; } = string.Empty;
+    /// <summary>Peso estimado de un bulto, en kg. Null si aun no se conoce.</summary>
+    public decimal? WeightKg { get; set; }
     public bool Status { get; set; }
 }
 
@@ -210,6 +214,8 @@ public class LogisticUnitResponse
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Abbreviation { get; set; } = string.Empty;
+    /// <summary>Peso estimado de un bulto, en kg. Alimenta el calculo de carga de una guia.</summary>
+    public decimal? WeightKg { get; set; }
     public bool Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

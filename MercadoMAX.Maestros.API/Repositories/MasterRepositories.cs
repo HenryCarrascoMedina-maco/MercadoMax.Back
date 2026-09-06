@@ -256,7 +256,7 @@ public class LogisticUnitRepository : ILogisticUnitRepository
     {
         using var conn = _db.CreateConnection();
         return await conn.QueryFirstAsync<SpResult>("master.SP_CREATE_LOGISTIC_UNIT",
-            new { r.Name, r.Abbreviation }, commandType: CommandType.StoredProcedure);
+            new { r.Name, r.Abbreviation, r.WeightKg }, commandType: CommandType.StoredProcedure);
     }
 
     public async Task<LogisticUnitResponse?> GetByIdAsync(int id)
@@ -278,7 +278,7 @@ public class LogisticUnitRepository : ILogisticUnitRepository
     {
         using var conn = _db.CreateConnection();
         return await conn.QueryFirstAsync<SpResult>("master.SP_UPDATE_LOGISTIC_UNIT",
-            new { r.Id, r.Name, r.Abbreviation, r.Status }, commandType: CommandType.StoredProcedure);
+            new { r.Id, r.Name, r.Abbreviation, r.WeightKg, r.Status }, commandType: CommandType.StoredProcedure);
     }
 
     public async Task<SpResult> DeleteAsync(int id)
