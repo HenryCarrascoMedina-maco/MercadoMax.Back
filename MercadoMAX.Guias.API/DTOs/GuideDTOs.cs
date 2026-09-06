@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace MercadoMAX.Guias.API.DTOs;
 
@@ -38,6 +38,8 @@ public class GuideListResponse
     public decimal TotalTransportCost { get; set; }
     public DateTime CreatedAt { get; set; }
     public int DetailCount { get; set; }
+    /// <summary>Puestos distintos a los que reparte: el numero de subguias.</summary>
+    public int StallCount { get; set; }
 }
 
 public class GuideHeaderResponse
