@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using MercadoMAX.Recepcion.API.DTOs;
 using MercadoMAX.Shared.Data;
 using MercadoMAX.Shared.DTOs;
@@ -41,7 +41,10 @@ public class ReceptionRepository : IReceptionRepository
     {
         using var conn = _db.CreateConnection();
         return await conn.QueryFirstAsync<SpResult>("reception.SP_CREATE_RECEPTION",
-            new { r.GuideId, r.StallId, r.ReceptionDate, r.Observations, r.UserId },
+            // SP_CREATE_RECEPTION recibe @ManagerId, no @UserId, y no tiene @StallId:
+            // la recepcion es de la guia entera y el reparto por puesto ya vive
+            // en sus lineas. Enviarlos como estaban provocaba un 500.
+            new { r.GuideId, ManagerId = r.UserId, r.ReceptionDate, r.Observations },
             commandType: CommandType.StoredProcedure);
     }
 

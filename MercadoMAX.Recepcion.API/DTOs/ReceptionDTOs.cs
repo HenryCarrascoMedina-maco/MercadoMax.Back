@@ -1,12 +1,12 @@
-namespace MercadoMAX.Recepcion.API.DTOs;
+﻿namespace MercadoMAX.Recepcion.API.DTOs;
 
 // ── Reception ───────────────────────────────────────────
 public class CreateReceptionRequest
 {
     public int GuideId { get; set; }
-    public int StallId { get; set; }
     public DateTime ReceptionDate { get; set; }
     public string? Observations { get; set; }
+    /// <summary>Encargado que registra la recepcion. Va al SP como @ManagerId.</summary>
     public int UserId { get; set; }
 }
 
