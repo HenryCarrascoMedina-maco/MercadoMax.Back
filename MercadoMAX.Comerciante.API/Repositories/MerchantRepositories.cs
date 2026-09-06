@@ -64,7 +64,7 @@ public class InventoryRepository : IInventoryRepository
     {
         using var conn = _db.CreateConnection();
         return await conn.QueryFirstAsync<SpResult>("merchant.SP_CREATE_INVENTORY",
-            new { r.StallId, r.ProductId, r.LogisticUnitId, r.CurrentStock, r.MinimumStock, r.AverageCost, r.UserId },
+            new { r.StallId, r.ProductId, r.LogisticUnitId, r.CurrentStock, r.MinimumStock, r.AverageCost },
             commandType: CommandType.StoredProcedure);
     }
 
@@ -109,7 +109,7 @@ public class InventoryMovementRepository : IInventoryMovementRepository
     {
         using var conn = _db.CreateConnection();
         return await conn.QueryFirstAsync<SpResult>("merchant.SP_CREATE_INVENTORY_MOVEMENT",
-            new { r.InventoryId, r.MovementType, r.Quantity, r.UnitCost, r.ReferenceDocument, r.ReferenceId, r.UserId },
+            new { r.InventoryId, r.MovementType, r.Quantity, r.ReferenceId, r.ReferenceType, r.Observations, r.UserId },
             commandType: CommandType.StoredProcedure);
     }
 

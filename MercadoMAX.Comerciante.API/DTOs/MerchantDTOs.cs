@@ -61,10 +61,10 @@ public class CreateInventoryMovementRequest
 {
     public int InventoryId { get; set; }
     public string MovementType { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public decimal UnitCost { get; set; }
-    public string? ReferenceDocument { get; set; }
+    public decimal Quantity { get; set; }
     public int? ReferenceId { get; set; }
+    public string? ReferenceType { get; set; }
+    public string? Observations { get; set; }
     public int UserId { get; set; }
 }
 
@@ -73,10 +73,11 @@ public class InventoryMovementResponse
     public int Id { get; set; }
     public int InventoryId { get; set; }
     public string MovementType { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public decimal UnitCost { get; set; }
-    public string? ReferenceDocument { get; set; }
+    public decimal Quantity { get; set; }
     public int? ReferenceId { get; set; }
+    public string? ReferenceType { get; set; }
+    public string? Observations { get; set; }
     public DateTime MovementDate { get; set; }
-    public string? ProductName { get; set; }
+    public int UserId { get; set; }
+    public string? UserName { get; set; }
 }
