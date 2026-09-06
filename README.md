@@ -69,7 +69,11 @@ Plataforma digital integral para mercados mayoristas que conecta proveedores, tr
 
 ## Configuración de Base de Datos
 
-Ejecutar los scripts SQL en orden desde la carpeta `ScriptBD/`:
+Los scripts de base de datos no viven en este repositorio ni en el del
+frontend: son comunes a los dos y se mantienen en una carpeta aparte,
+`ScriptBD/`, junto a ambas copias de trabajo.
+
+Ejecutarlos en orden:
 
 ```powershell
 # Desde SQL Server Management Studio o sqlcmd, ejecutar en orden:
@@ -186,8 +190,12 @@ El proyecto vive en dos repositorios:
 
 | Repositorio | Contenido |
 |-------------|-----------|
-| [MercadoMax.Back](https://github.com/HenryCarrascoMedina-maco/MercadoMax.Back) | Microservicios .NET, gateway, scripts SQL, compose y documentación |
+| [MercadoMax.Back](https://github.com/HenryCarrascoMedina-maco/MercadoMax.Back) | Microservicios .NET, gateway, compose y documentación |
 | [MercadoMax.Front](https://github.com/HenryCarrascoMedina-maco/MercadoMax.Front) | SPA Angular 21 |
+
+Los scripts SQL quedan fuera de ambos, en una carpeta `ScriptBD/` al lado de
+las dos copias de trabajo, porque la base de datos es una sola y no pertenece
+a ninguno de los dos lados.
 
 ```
 MercadoMax.Back/
@@ -200,7 +208,6 @@ MercadoMax.Back/
 ├── MercadoMAX.Finanzas.API/       # Microservicio Finanzas
 ├── MercadoMAX.Gateway/            # API Gateway (Ocelot)
 ├── MercadoMAX.Shared/             # Librería compartida (DTOs, Data, Cross-Cutting)
-├── ScriptBD/                      # Scripts SQL (tablas, SPs, seed data)
 ├── docs/                          # Plan, guías, flujo y reportes de fases
 ├── docker-compose.yml             # Entorno completo (BD, APIs, gateway, front)
 ├── MercadoMAX.slnx                # Solución
